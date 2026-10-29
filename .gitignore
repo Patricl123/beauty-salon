@@ -1,0 +1,43 @@
+# Dependencies and generated files
+node_modules/
+dist/
+test-results/
+playwright-report/
+*.tsbuildinfo
+*.log
+
+# Local environment files; keep sanitized templates at every directory level
+.env*
+!.env.example
+.envrc
+
+# Supabase local state
+supabase/.temp/
+supabase/.branches/
+supabase/functions/site-media/vendor/
+
+# Server credentials and private keys
+.secrets/
+secrets/
+*.secret
+*.secrets
+secrets.json
+secrets.toml
+credentials.json
+*.credentials.json
+service-account*.json
+service_account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+id_rsa
+id_ed25519
+
+# Database exports
+*.dump
+*.dump.gz
+*.backup
+*.sql.gz
