@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import {
   ArrowRight,
   Check,
@@ -9,7 +8,6 @@ import {
   Plus,
   ShieldCheck,
   Sparkles,
-  Star,
 } from "lucide-react";
 import { useStore } from "../lib/store";
 import { categories, durationLabel, money } from "../i18n";
@@ -20,6 +18,8 @@ import type { BookingPreset, Category } from "../types";
 import { Arrow, Brand, Empty, Modal } from "../components/UI";
 import { useSiteContent } from "../lib/siteContent";
 import { ContentImage, MasterImage } from "../components/SiteImage";
+import { isPublishedMaster, isPublishedWork } from "../lib/publicContent";
+import { LocationMap } from "../components/LocationMap";
 const categoryPhotos: Record<Category, string> = {
   hair: "/images/hair.jpg",
   nails: "/images/nails.jpg",
@@ -28,7 +28,7 @@ const categoryPhotos: Record<Category, string> = {
   care: "/images/care.jpg",
 };
 export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
-  const { data } = useStore();
+  const { data, loading, error, refresh } = useStore();
   const [category, setCategory] = useState<Category>("hair");
   const [portfolio, setPortfolio] = useState<string | null>(null);
   const [salonIndex, setSalonIndex] = useState(0);
@@ -41,10 +41,11 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
     ? salonIndex % salonPhotos.length
     : 0;
   const works = content.items
-    .filter((i) => i.kind === "portfolio" && i.visible)
+    .filter(isPublishedWork)
     .sort((a, b) => a.position - b.position);
   const selectedWork = works.find((i) => i.id === portfolio);
   const nearest = useNearestSlots();
+  const publicMasters = data.masters.filter(isPublishedMaster);
   return (
     <>
       <main>
@@ -132,7 +133,7 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
             </button>
           </div>
           <div className="slots-grid">
-            {nearest.map((slot) => (
+            {!error && !loading && nearest.slots.map((slot) => (
               <article className="slot-card" key={slot.service.id}>
                 <div className="slot-top">
                   <span className="slot-date">
@@ -171,7 +172,17 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
                 </div>
               </article>
             ))}
-            {!nearest.length && (
+            {(loading || nearest.loading) && !error && <p role="status">Проверяем свободное время…</p>}
+            {(error || nearest.error) && (
+              <div role="alert" className="form-error">
+                <p>Не удалось загрузить свободное время. {error || nearest.error}</p>
+                <button className="button button-light" onClick={() => {
+                  if (error) void refresh();
+                  else nearest.retry();
+                }}>Повторить загрузку времени</button>
+              </div>
+            )}
+            {!loading && !error && !nearest.loading && !nearest.error && !nearest.slots.length && (
               <Empty title="Свободных окошек пока нет">
                 <p>Посмотрите другие услуги или мастеров.</p>
                 <button
@@ -299,7 +310,7 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
             </div>
           </div>
         </section>
-        <section className="section container" id="masters">
+        {publicMasters.length > 0 && <section className="section container" id="masters">
           <div className="section-heading">
             <div>
               <div className="eyebrow">КРАСОТА НАЧИНАЕТСЯ С ДОВЕРИЯ</div>
@@ -307,12 +318,10 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
             </div>
             <p className="heading-aside">
               Знакомьтесь с вашей командой заботы.
-              <br />
-              <span className="subtle">Демонстрационные профили мастеров.</span>
             </p>
           </div>
           <div className="masters-grid">
-            {data.masters.filter(m => !m.archived).map((m) => (
+            {publicMasters.map((m) => (
               <article className="master-card" key={m.id}>
                 <div className="master-photo">
                   <MasterImage master={m} loading="lazy" />
@@ -330,7 +339,7 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
               </article>
             ))}
           </div>
-        </section>
+        </section>}
         <section className="about-section" id="about">
           <div className="container about-layout">
             <div className="about-image">
@@ -402,17 +411,12 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
             </div>
           </div>
         </section>
-        <section className="section container" id="portfolio">
+        {works.length > 0 && <section className="section container" id="portfolio">
           <div className="section-heading">
             <div>
               <div className="eyebrow">КРАСОТА БЕЗ ЛИШНИХ СЛОВ</div>
-              <h2>Вдохновение для вас</h2>
+              <h2>Наши работы</h2>
             </div>
-            <p className="heading-aside">
-              Настроение будущего портфолио.
-              <br />
-              Иллюстрации, не работы реального салона.
-            </p>
           </div>
           <div className="portfolio-grid">
             {works.map((work) => (
@@ -430,53 +434,7 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
               </button>
             ))}
           </div>
-        </section>
-        <section className="reviews-section section">
-          <div className="container">
-            <div className="section-heading">
-              <div>
-                <div className="eyebrow">СЛОВА, КОТОРЫЕ СОГРЕВАЮТ</div>
-                <h2>После встречи</h2>
-              </div>
-              <span className="demo-label">Примеры отзывов · демо</span>
-            </div>
-            <div className="reviews-grid">
-              {[
-                {
-                  name: "Мээрим",
-                  text: "Именно тот момент, когда можно выдохнуть и посвятить время себе. Очень нравится эта атмосфера.",
-                  service: "Стрижка и укладка",
-                },
-                {
-                  name: "Анастасия",
-                  text: "Красивый нюд, аккуратная форма и никакой спешки. Такой и хочется видеть заботу о себе.",
-                  service: "Маникюр с покрытием",
-                },
-                {
-                  name: "Айпери",
-                  text: "Лёгкий макияж, в котором остаёшься собой. Приятно, когда слышат твои пожелания.",
-                  service: "Дневной макияж",
-                },
-              ].map((r) => (
-                <article className="review" key={r.name}>
-                  <div
-                    className="review-stars"
-                    aria-label="Демонстрационная оценка: 5 из 5"
-                  >
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star key={i} size={13} fill="currentColor" />
-                    ))}
-                  </div>
-                  <blockquote>«{r.text}»</blockquote>
-                  <div>
-                    <strong>{r.name}</strong>
-                    <span>{r.service} · демопример</span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
+        </section>}
         <section className="section container faq-layout">
           <div>
             <div className="eyebrow">ВСЁ, ЧТО ХОТЕЛОСЬ УТОЧНИТЬ</div>
@@ -563,30 +521,13 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
                 Найти время для себя <Arrow />
               </button>
             </div>
-            <div className="map-placeholder">
-              <div className="map-grid" />
-              <div className="map-content">
-                <MapPin size={29} strokeWidth={1} />
-                <h3>Скоро встретимся здесь</h3>
-                <p>
-                  {data.settings.address || "Бишкек, Кыргызстан"}
-                  <br />
-                  Карта появится после подтверждения адреса.
-                </p>
-                <span>Без вымышленной отметки на карте</span>
-              </div>
-            </div>
-          </div>
+            <LocationMap settings={data.settings} />          </div>
         </section>
       </main>
       <footer className="site-footer">
         <div className="container footer-main">
           <Brand />
           <p>Красота — это быть собой.</p>
-          <Link to="/admin">
-            {isSupabase ? "Вход для команды" : "Демо админ-панели"}{" "}
-            <Arrow size={15} />
-          </Link>
         </div>
         <div className="container footer-bottom">
           <span>

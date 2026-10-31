@@ -13,6 +13,7 @@ import {
 import { Modal } from "./UI";
 import { ImageEditor } from "./ImageEditor";
 import { isSupabase } from "../lib/supabase";
+import { masters as initialMasters } from "../data/seed";
 import {
   mediaError,
   mediaRequest,
@@ -161,11 +162,12 @@ export function MasterForm({
 }) {
   const { data, update } = useStore();
   const [form, setForm] = useState<Master>(
-    initial || {
+    initial ? { ...initial, published: initial.published === true } : {
       id: crypto.randomUUID(),
       name: "",
       specialty: "",
       photo: "",
+      published: false,
       serviceIds: [],
       days: [1, 2, 3, 4, 5],
       start: "09:00",
@@ -178,10 +180,17 @@ export function MasterForm({
     },
   );
   const [daysOff, setDaysOff] = useState(form.daysOff.join(", "));
+  // Keep the established project options and every saved owner-defined value.
+  // Specialties are labels, never a replacement for assigned serviceIds.
+  const specialties = [...new Set([
+    ...initialMasters.map(m => m.specialty),
+    ...data.masters.map(m => m.specialty),
+    form.specialty,
+  ].filter(Boolean))];
   const [photo, setPhoto] = useState<ImageDraft>({
     assetId: initial?.photoAssetId || null,
     legacySrc: initial?.photo || "",
-    alt: initial?.photoAlt || initial?.name || "",
+    alt: initial?.photoAlt ?? initial?.name ?? "",
   });
   const [photoBusy, setPhotoBusy] = useState(false);
   const photoLock = useRef(false);
@@ -323,25 +332,35 @@ export function MasterForm({
     >
       <form onSubmit={save} aria-busy={photoBusy}>
         <fieldset disabled={photoBusy} style={{ display: "contents" }}>
-          <div className="form-grid">
-            <label>
-              Имя
-              <input
-                required
-                maxLength={80}
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-              />
+          <label htmlFor="master-name">
+            Имя
+            <input id="master-name" required maxLength={80}
+              value={form.name} onChange={(e) => set("name", e.target.value)} />
+          </label>
+          <section className="master-publication" aria-labelledby="master-publication-title">
+            <h3 id="master-publication-title">Публикация на сайте</h3>
+            <p className="subtle">
+              {form.archived ? "В архиве — скрыт на сайте и недоступен для новых записей." : form.published ? "После сохранения профиль будет виден посетителям и доступен для онлайн-записи." : "Не опубликован — виден только в админке, новые записи недоступны."}
+            </p>
+            <label className="checkbox-label" htmlFor="master-published">
+              <input id="master-published" name="published" type="checkbox"
+                checked={form.published === true}
+                onChange={(e) => set("published", e.target.checked)} />
+              <span>Показывать мастера на сайте и разрешить онлайн-запись</span>
             </label>
-            <label>
-              Специализация
-              <input
+            <p className="subtle">Изменение вступит в силу после нажатия «Сохранить мастера». Для записи нужны назначенная активная услуга и рабочее расписание. Архивный профиль нужно также восстановить.</p>
+          </section>
+            <label htmlFor="master-specialty">
+              <span id="master-specialty-label">Специализация</span>
+              <select id="master-specialty" aria-labelledby="master-specialty-label"
                 required
                 value={form.specialty}
                 onChange={(e) => set("specialty", e.target.value)}
-              />
+              >
+                <option value="" disabled>Выберите специализацию</option>
+                {specialties.map(value => <option key={value} value={value}>{value}</option>)}
+              </select>
             </label>
-          </div>
           <ImageEditor
             value={photo}
             onChange={setPhoto}

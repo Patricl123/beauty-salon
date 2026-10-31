@@ -12,6 +12,7 @@ export interface Service {
   active: boolean;
 }
 export interface Master {
+  published?: boolean;
   archived?: boolean;
   id: string;
   name: string;
@@ -57,6 +58,10 @@ export interface Block {
   reason: string;
 }
 export interface SalonSettings {
+  buildingDescription?: string;
+  mapUrl?: string;
+  mapEmbedUrl?: string;
+  mapConfirmed?: boolean;
   name: string;
   tagline: string;
   address: string;

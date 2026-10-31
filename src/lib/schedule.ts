@@ -1,4 +1,5 @@
 import type { AppData, Appointment, Master, Service } from '../types';
+import { isPublishedMaster } from './publicContent';
 export const TIME_ZONE = 'Asia/Bishkek';
 export function today(now = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
@@ -22,7 +23,7 @@ export function fitsSchedule(data: AppData, master: Master, date: string, time: 
   return !data.blocks.some(b => b.masterId === master.id && b.date === date && overlaps(start, end, minutes(b.start), minutes(b.end)));
 }
 export function isAvailable(data: AppData, service: Service, master: Master, date: string, time: string, excludeId?: string, now = new Date()) {
-  if (service.archived || master.archived || !service.active || !master.serviceIds.includes(service.id) || !fitsSchedule(data, master, date, time, service.duration)) return false;
+  if (service.archived || !isPublishedMaster(master) || !service.active || !master.serviceIds.includes(service.id) || !fitsSchedule(data, master, date, time, service.duration)) return false;
   if (instant(date, time).getTime() <= now.getTime()) return false;
   const start = minutes(time), end = start + service.duration;
   return !data.appointments.some(a => a.id !== excludeId && a.masterId === master.id && a.date === date && occupies(a) && overlaps(start, end, minutes(a.time), minutes(a.time) + a.duration));

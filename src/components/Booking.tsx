@@ -38,7 +38,7 @@ export function Booking({
   onClose: () => void;
   onSuccess: (message: string) => void;
 }) {
-  const { data, book, setStatus, saving } = useStore();
+  const { data, book, setStatus, saving, loading: catalogLoading, error: catalogError, refresh } = useStore();
   const auth = useAuth();
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaAttempt, setCaptchaAttempt] = useState(0);
@@ -76,7 +76,7 @@ export function Booking({
   const master = data.masters.find(
     (m) => m.id === (selectedMaster || masterId),
   );
-  const eligible = data.masters.filter((m) => !m.archived && m.serviceIds.includes(serviceId));
+  const eligible = data.masters.filter((m) => m.published === true && !m.archived && m.serviceIds.includes(serviceId));
   const availability = useAvailability(serviceId, masterId, date, existing?.id);
   const available = availability.slots;
   const result = data.appointments.find((a) => a.id === resultId);
@@ -229,7 +229,7 @@ export function Booking({
           )}
         </div>
       )}
-      {availability.error && (
+      {availability.error && step !== 2 && (
         <p className="form-error" role="alert">
           {availability.error}
         </p>
@@ -240,7 +240,13 @@ export function Booking({
         </p>
       )}
       <div className="booking-body">
-        {step === 0 && (
+        {step < 4 && (catalogLoading || catalogError) && (
+          <div role={catalogError ? "alert" : "status"}>
+            <p>{catalogError ? "Не удалось загрузить актуальный каталог для записи. Повторите загрузку." : "Загружаем каталог…"}</p>
+            {catalogError && <button className="button button-light" onClick={() => void refresh()}>Повторить загрузку каталога</button>}
+          </div>
+        )}
+        {step === 0 && !catalogLoading && !catalogError && (
           <>
             <h3>С чего начнём?</h3>
             <p className="subtle">Выберите свой ритуал красоты.</p>
@@ -294,7 +300,7 @@ export function Booking({
             ) && <Empty title="У этого мастера пока нет доступных услуг" />}
           </>
         )}
-        {step === 1 && (
+        {step === 1 && !catalogLoading && !catalogError && (
           <>
             <h3>Кому доверим вашу красоту?</h3>
             <p className="subtle">
@@ -349,7 +355,7 @@ export function Booking({
             </button>
           </>
         )}
-        {step === 2 && (
+        {step === 2 && !catalogLoading && !catalogError && (
           <>
             <h3>Когда вам удобно?</h3>
             <p className="subtle">Время Бишкека · UTC+6 · Asia/Bishkek</p>
@@ -420,6 +426,11 @@ export function Booking({
                   <p className="subtle" role="status">
                     Проверяем свободное время…
                   </p>
+                ) : availability.error ? (
+                  <div role="alert" className="form-error">
+                    <p>Не удалось загрузить свободное время. {availability.error}</p>
+                    <button className="button button-light" onClick={availability.retry}>Повторить загрузку времени</button>
+                  </div>
                 ) : available.length ? (
                   <>
                     <div className="time-grid">
@@ -498,7 +509,7 @@ export function Booking({
             </button>
           </>
         )}
-        {step === 3 && (
+        {step === 3 && !catalogLoading && !catalogError && (
           <form
             noValidate
             onSubmit={(e) => {

@@ -3,8 +3,13 @@ import { Link } from "react-router-dom";
 import { CalendarDays, Menu, X } from "lucide-react";
 import { isSupabase } from "../lib/supabase";
 import { Brand, Arrow } from "./UI";
+import { useStore } from "../lib/store";
+import { useSiteContent } from "../lib/siteContent";
+import { isPublishedMaster, isPublishedWork } from "../lib/publicContent";
 export function Header({ onBook }: { onBook: () => void }) {
   const [open, setOpen] = useState(false);
+  const { data } = useStore();
+  const { content } = useSiteContent();
   return (
     <>
       <div className="demo-strip">
@@ -28,8 +33,9 @@ export function Header({ onBook }: { onBook: () => void }) {
           >
             {[
               ["services", "Услуги и цены"],
-              ["masters", "Мастера"],
+              ...(data.masters.some(isPublishedMaster) ? [["masters", "Мастера"]] : []),
               ["about", "О салоне"],
+              ...(content.items.some(isPublishedWork) ? [["portfolio", "Наши работы"]] : []),
               ["contacts", "Контакты"],
             ].map(([id, label]) => (
               <a key={id} href={`/#${id}`} onClick={() => setOpen(false)}>

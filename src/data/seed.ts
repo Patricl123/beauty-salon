@@ -16,7 +16,7 @@ export const services: Service[] = [
   service('facial', 'care', 'Увлажняющий уход', 'Мягкое очищение, сыворотка и маска по потребностям кожи.', 2800, 60),
   service('massage', 'care', 'Массаж лица', 'Час спокойствия: расслабление, тонус и бережная забота.', 2000, 60),
 ];
-const master = (id: string, name: string, specialty: string, photo: string, serviceIds: string[], days: number[]): Master => ({ id, name, specialty, photo, serviceIds, days, start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00', daysOff: [], vacationStart: '', vacationEnd: '' });
+const master = (id: string, name: string, specialty: string, photo: string, serviceIds: string[], days: number[]): Master => ({ id, name, specialty, photo, published: false, serviceIds, days, start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00', daysOff: [], vacationStart: '', vacationEnd: '' });
 export const masters: Master[] = [
   master('aida', 'Аида', 'Стилист по волосам', '/images/master-aida.jpg', ['haircut', 'color', 'styling', 'treatment'], [1, 2, 3, 5, 6, 0]),
   master('aliya', 'Алия', 'Мастер маникюра', '/images/master-aliya.jpg', ['manicure', 'pedicure', 'nude'], [1, 2, 4, 5, 6, 0]),
@@ -37,7 +37,7 @@ export const notificationSettings: NotificationSettings = {
   },
 };
 export function createSeed(): AppData {
-  const data: AppData = { version: 1, services: structuredClone(services), masters: structuredClone(masters), appointments: [], blocks: [], clientNotes: {}, notifications: [], notificationSettings: structuredClone(notificationSettings), settings: { name: 'AURA', tagline: 'Beauty Bishkek', address: '', phone: '', email: '', start: '09:00', end: '20:00', days: [0, 1, 2, 3, 4, 5, 6], cancellationPolicy: 'Перенесите или отмените запись в разделе «Мои записи». Будем благодарны, если вы сообщите об изменениях за 3 часа до визита. В демоверсии отмена доступна без ограничений.' } };
+  const data: AppData = { version: 1, services: structuredClone(services), masters: structuredClone(masters), appointments: [], blocks: [], clientNotes: {}, notifications: [], notificationSettings: structuredClone(notificationSettings), settings: { name: 'AURA', tagline: 'Beauty Bishkek', address: 'Бишкек, Проспект Манаса, 38 / Киевская улица, 164', buildingDescription: 'Малоэтажный жилой дом', mapUrl: 'https://2gis.kg/bishkek/geo/15763234351108741/74.587887,42.875068', mapEmbedUrl: 'https://yandex.ru/map-widget/v1/?ll=74.587887%2C42.875068&z=17&pt=74.587887%2C42.875068%2Cpm2rdm', mapConfirmed: true, phone: '', email: '', start: '09:00', end: '20:00', days: [0, 1, 2, 3, 4, 5, 6], cancellationPolicy: 'Перенесите или отмените запись в разделе «Мои записи». Будем благодарны, если вы сообщите об изменениях за 3 часа до визита. В демоверсии отмена доступна без ограничений.' } };
   const base = today();
   let n = 1;
   for (let day = -2; day < 8; day++) {

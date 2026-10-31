@@ -8,6 +8,21 @@ export const repository = {
     if (!raw) return createSeed();
     const data = JSON.parse(raw) as AppData;
     if (data.version !== 1 || !Array.isArray(data.appointments) || !Array.isArray(data.masters) || !Array.isArray(data.services) || !data.settings || !data.notificationSettings || !data.clientNotes || !Array.isArray(data.blocks) || !Array.isArray(data.notifications)) throw new Error('Сохранённые демоданные повреждены. Можно сбросить их в настройках.');
+    // One-time upgrade of the older local demo settings. Explicitly cleared
+    // addresses in the new format stay cleared; profiles are never auto-published.
+    if (data.settings.mapConfirmed === undefined) {
+      const defaults = createSeed().settings;
+      if (!data.settings.address.trim()) {
+        data.settings.address = defaults.address;
+      }
+      const matches = data.settings.address === defaults.address;
+      data.settings = { ...data.settings,
+        buildingDescription: data.settings.buildingDescription || (matches ? defaults.buildingDescription : ""),
+        mapUrl: matches ? defaults.mapUrl : "",
+        mapEmbedUrl: matches ? defaults.mapEmbedUrl : "",
+        mapConfirmed: matches,
+      };
+    }
     return data;
   },
   write(data: AppData) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); },

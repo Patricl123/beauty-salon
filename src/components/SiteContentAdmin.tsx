@@ -258,6 +258,7 @@ export function SiteContentAdmin({
                   снимков можно переключать кнопками.
                 </p>
               )}
+              {kind === "portfolio" && <p className="subtle content-section-note">Загружайте фотографии настоящих работ салона. Отметка «Показывать на сайте» публикует загруженное фото после сохранения. Стартовые иллюстрации видны только здесь; для публикации замените их своим файлом.</p>}
               <div className="content-image-grid">
                 {group.map((row, index) => (
                   <article
@@ -326,6 +327,7 @@ export function SiteContentAdmin({
                         )
                       }
                     />
+                    {kind === "portfolio" && !row.assetId && !row.file && row.legacySrc && <p className="demo-label">Стартовая иллюстрация · только в админке</p>}
                     {kind === "portfolio" && (
                       <>
                         <label>

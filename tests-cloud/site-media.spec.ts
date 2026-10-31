@@ -217,7 +217,8 @@ test("portfolio ordering/hiding persists, concurrent edit is rejected, content e
   await expect(page.locator(".portfolio-card").first()).toContainText(
     "Мобильная работа",
   );
-  await expect(page.locator(".portfolio-card")).toHaveCount(count - 1);
+  // Only the owner-uploaded work is public; legacy examples remain in admin.
+  await expect(page.locator(".portfolio-card")).toHaveCount(1);
   await other.close();
 });
 test("master photo is saved from the existing profile form and direct media requests enforce auth", async ({

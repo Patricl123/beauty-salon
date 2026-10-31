@@ -1,5 +1,15 @@
 import { test, expect, type Page } from '@playwright/test';
 const key = 'aura-beauty-demo-v1';
+// These regression scenarios exercise an explicitly published test catalog.
+// Actual seed profiles remain unpublished; publication itself has separate tests.
+test.beforeEach(async ({ page }) => {
+  const { createSeed } = await import('../src/data/seed');
+  const fixture = createSeed();
+  fixture.masters.forEach(m => { m.published = true; });
+  await page.addInitScript(({key, fixture}) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(fixture));
+  }, {key, fixture});
+});
 async function enterAdmin(page: Page) { await page.goto('/admin'); await page.getByRole('button', { name: 'Войти в демо админ-панели' }).click(); }
 test('home has all sections, local photos, keyboard navigation and no mobile overflow', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));

@@ -7,6 +7,7 @@ import { repository, STORAGE_KEY } from './repository';
 import type { Appointment } from '../types';
 function fixture() {
   const data = createSeed(); data.appointments = []; data.blocks = [];
+  data.masters.forEach(m => { m.published = true; }); // Explicit test fixture publication.
   const master = data.masters[0]; master.days = [0, 1, 2, 3, 4, 5, 6];
   const service = data.services[0]; const date = addDays(today(), 2);
   return { data, master, service, date };
@@ -39,5 +40,5 @@ describe('Notification planning and calendar export', () => {
 });
 describe('Repository and demo seed', () => {
   it('round-trips shared application data and rejects corrupted persisted state', () => { const values = new Map<string, string>(); const storage = { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => { values.set(key, value); } }; Object.defineProperty(globalThis, 'localStorage', { value: storage, configurable: true }); const data = createSeed(); repository.write(data); expect(repository.read()).toEqual(data); values.set(STORAGE_KEY, '{bad json'); expect(() => repository.read()).toThrow(); });
-  it('contains five masters, thirteen services and future demo visits', () => { const data = createSeed(); expect(data.masters).toHaveLength(5); expect(data.services).toHaveLength(13); expect(data.appointments.some(a => a.date > today() && a.owner === 'visitor')).toBe(true); expect(data.settings.address).toBe(''); expect(data.settings.phone).toBe(''); });
+  it('contains five masters, thirteen services and future demo visits', () => { const data = createSeed(); expect(data.masters).toHaveLength(5); expect(data.services).toHaveLength(13); expect(data.appointments.some(a => a.date > today() && a.owner === 'visitor')).toBe(true); expect(data.settings.address).toContain('Проспект Манаса, 38'); expect(data.masters.every(m => m.published === false)).toBe(true); expect(data.settings.phone).toBe(''); });
 });

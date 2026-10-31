@@ -63,10 +63,14 @@ for (const kind of ["master", "service"] as const) {
     await dialog
       .getByLabel(kind === "master" ? "Имя" : "Название", { exact: true })
       .fill(name);
-    if (kind === "master")
+    if (kind === "master") {
       await dialog
         .getByLabel("Специализация", { exact: true })
-        .fill("Тестовый профиль");
+        .selectOption("Стилист по волосам");
+      const publication = dialog.getByRole('checkbox', {name:'Показывать мастера на сайте и разрешить онлайн-запись',exact:true});
+      await expect(publication).not.toBeChecked();
+      await publication.check();
+    }
     await dialog
       .getByRole("button", {
         name: kind === "master" ? "Сохранить мастера" : "Сохранить услугу",
@@ -74,6 +78,10 @@ for (const kind of ["master", "service"] as const) {
       })
       .click();
     await expect(dialog).toHaveCount(0);
+    if (kind === 'master') {
+      const saved = await call<AppData>('get_admin_snapshot');
+      expect(saved.masters.find(m => m.name === name)).toMatchObject({published:true, specialty:'Стилист по волосам',serviceIds:[]});
+    }
     const row = entry(page, kind, name);
     await row.getByRole("button", { name: "Удалить", exact: true }).click();
     await expect(dialog).toContainText("Связанных записей нет");

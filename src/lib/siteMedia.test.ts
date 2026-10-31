@@ -378,8 +378,9 @@ describe("Media API, actual PostgreSQL grants and publication transactions", () 
     expect((await content()).revision).toBe(published.revision);
   });
   it("persists ordering/hiding, rejects stale editors and arbitrary image paths", async () => {
+    const work = await upload();
     const current = await content();
-    const items = current.items.map((i) =>
+    const items = current.items.map(i => i.kind === "portfolio" ? { ...i, assetId: work.id, legacySrc: "" } : i).map((i) =>
       i.id === "portfolio:hair"
         ? { ...i, position: 8, visible: false }
         : i.id === "portfolio:makeup"

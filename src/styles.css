@@ -178,3 +178,17 @@
   margin: 20px 0;
 }
 .admin-master-card > .text-link { margin-top: 12px; }
+.master-publication { border: 1px solid #d8ccbd; background: #f0ebe5; border-radius: 6px; padding: 18px; margin-bottom: 22px; }
+.master-publication h3 { font-family: Georgia, serif; font-size: 24px; margin-bottom: 10px; }
+.master-publication .checkbox-label { align-items: flex-start; line-height: 1.6; margin: 16px 0; }
+.master-publication input[type="checkbox"] { flex: 0 0 20px; width: 20px; height: 20px; margin-top: 2px; }
+.master-publication p { line-height: 1.6; }
+.admin-master-card .master-publication-status { display: block; padding: 8px 10px; border-radius: 4px; background: #eee8de; line-height: 1.5; }
+.location-map { min-width: 0; display: flex; flex-direction: column; gap: 16px; border: 1px solid #d8ccbd; border-radius: 6px; padding: 24px; background: #f8f6f2; }
+.location-map h3 { font-family: Georgia, serif; font-size: 28px; }
+.location-map p { line-height: 1.7; overflow-wrap: anywhere; }
+.location-address { display: flex; gap: 10px; align-items: flex-start; }
+.location-address svg { margin-top: 4px; }
+.location-map iframe { width: 100%; height: 330px; border: 0; border-radius: 4px; background: #ede8df; }
+.location-map-notice { min-height: 140px; display: grid; align-content: center; padding: 20px; background: #ede8df; font-size: 13px; line-height: 1.7; }
+@media(max-width:700px) { .location-map { padding: 18px; }.location-map iframe { height: 280px; }.location-map .button { white-space: normal; } }

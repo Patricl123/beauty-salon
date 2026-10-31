@@ -57,6 +57,7 @@ import { makeNotifications } from "../lib/notifications";
 import { SiteContentAdmin } from "../components/SiteContentAdmin";
 import { MasterImage } from "../components/SiteImage";
 import { CatalogActions, ArchiveFilter } from "../components/CatalogActions";
+import { safeMapUrl } from "../lib/publicContent";
 const tabs = [
   { id: "overview", name: "Обзор", icon: LayoutDashboard },
   { id: "calendar", name: "Календарь", icon: CalendarDays },
@@ -671,6 +672,7 @@ export function Admin({
                   <article className="admin-master-card" key={m.id}>
                     <MasterImage master={m} />
                     <h2>{m.name}</h2>
+                    <small className="master-publication-status">{m.archived ? "В архиве · скрыт на сайте" : m.published === true ? "Опубликован · доступен для записи" : "Не опубликован · ожидает подтверждения публикации"}</small>
                     <p>{m.specialty}</p>
                     <span>{m.days.map((d) => weekdays[d]).join(", ")}</span>
                     <span>
@@ -1096,6 +1098,10 @@ function SettingsPanel({ onMessage }: { onMessage: (s: string) => void }) {
             return setError(
               "Начало рабочего дня должно быть раньше окончания.",
             );
+          if ((form.mapUrl && !safeMapUrl(form.mapUrl)) || (form.mapEmbedUrl && !safeMapUrl(form.mapEmbedUrl, true)))
+            return setError("Используйте HTTPS-ссылку на 2ГИС, Яндекс Карты или Google Maps; для встраивания — ссылку src из виджета Яндекса или Google.");
+          if (form.mapConfirmed && (!form.address.trim() || !form.mapUrl))
+            return setError("Для подтверждения точки укажите адрес и ссылку на здание.");
           if (
             form.phone &&
             !/^\+996\d{9}$/.test(form.phone.replace(/[\s()-]/g, ""))
@@ -1157,10 +1163,24 @@ function SettingsPanel({ onMessage }: { onMessage: (s: string) => void }) {
           Адрес
           <input
             value={form.address}
-            onChange={(e) => set("address", e.target.value)}
+            onChange={(e) => { set("address", e.target.value); set("mapConfirmed", false); set("mapUrl", ""); set("mapEmbedUrl", ""); }}
             placeholder="Пока не указан — карта не показывает отметку"
           />
         </label>
+        <label>Описание здания
+          <input maxLength={500} value={form.buildingDescription || ""} onChange={(e) => set("buildingDescription", e.target.value)} />
+        </label>
+        <label>Ссылка на здание / маршрут
+          <input type="url" maxLength={2000} value={form.mapUrl || ""} onChange={(e) => { set("mapUrl", e.target.value); set("mapConfirmed", false); set("mapEmbedUrl", ""); }} placeholder="https://…" />
+        </label>
+        <label>Ссылка встроенной карты
+          <input type="url" maxLength={2000} value={form.mapEmbedUrl || ""} onChange={(e) => { set("mapEmbedUrl", e.target.value); set("mapConfirmed", false); }} placeholder="URL из src виджета Яндекс Карт или Google Maps" />
+        </label>
+        <label className="checkbox-label">
+          <input type="checkbox" checked={form.mapConfirmed === true} onChange={(e) => set("mapConfirmed", e.target.checked)} />
+          Подтверждаю: адрес, ссылка и встроенная карта указывают на нужное здание.
+        </label>
+        <p className="subtle">До подтверждения посетители видят поиск по адресу. Вставляйте только URL из src, не весь HTML-код. Изменение адреса очищает прежние ссылки на карту.</p>
         <div className="form-grid">
           <label>
             Телефон

@@ -4,6 +4,7 @@ import { getSlots, nextAvailable, today, type Slot } from "./schedule";
 import { cloudRepository } from "./cloudRepository";
 import { isSupabase } from "./supabase";
 import { apiError } from "./apiErrors";
+import { isPublishedMaster } from "./publicContent";
 export function useAvailability(
   serviceId: string,
   masterId: string,
@@ -11,7 +12,8 @@ export function useAvailability(
   excludeId?: string,
 ) {
   const { data } = useStore();
-  const key = `${serviceId}/${masterId}/${date}/${excludeId || ""}/${data.revision || 0}`;
+  const [attempt, setAttempt] = useState(0);
+  const key = `${serviceId}/${masterId}/${date}/${excludeId || ""}/${data.revision || 0}/${attempt}`;
   const [remote, setRemote] = useState<{
     key: string;
     slots: Slot[];
@@ -46,6 +48,7 @@ export function useAvailability(
       : getSlots(data, serviceId, masterId, date, excludeId),
     loading: isSupabase && !!serviceId && remote.key !== key,
     error: remote.key === key ? remote.error : "",
+    retry: () => setAttempt(n => n + 1),
     next: (from: string) =>
       isSupabase
         ? cloudRepository.next(serviceId, masterId, from, excludeId)
@@ -56,14 +59,15 @@ export function useAvailability(
 }
 export function useNearestSlots() {
   const { data } = useStore();
-  const [remote, setRemote] = useState<
-    { serviceId: string; slot: Slot & { date: string } }[]
-  >([]);
+  type Row = { serviceId: string; slot: Slot & { date: string } };
+  const [attempt, setAttempt] = useState(0);
+  const [remote, setRemote] = useState<{key: string; rows: Row[]; error: string}>({key: '', rows: [], error: ''});
   const serviceIds = data.services
-    .filter((s) => s.active)
+    .filter((s) => s.active && !s.archived && data.masters.some(m => isPublishedMaster(m) && m.serviceIds.includes(s.id)))
     .slice(0, 3)
     .map((s) => s.id)
     .join(",");
+  const key = `${serviceIds}/${data.revision || 0}/${attempt}`;
   useEffect(() => {
     if (!isSupabase || !serviceIds) return;
     let alive = true;
@@ -77,29 +81,33 @@ export function useNearestSlots() {
     )
       .then((rows) => {
         if (alive)
-          setRemote(
-            rows.filter(
+          setRemote({key, error: '', rows: rows.filter(
               (r): r is { serviceId: string; slot: Slot & { date: string } } =>
                 !!r.slot,
-            ),
-          );
+            )});
       })
-      .catch(() => {
-        if (alive) setRemote([]);
+      .catch((error) => {
+        if (alive) setRemote({key, rows: [], error: apiError(error)});
       });
     return () => {
       alive = false;
     };
-  }, [serviceIds, data.revision]);
+  }, [serviceIds, key]);
   const rows = isSupabase
-    ? remote
+    ? serviceIds && remote.key === key ? remote.rows : []
     : ["manicure", "haircut", "brows"].flatMap((serviceId) => {
         const slot = nextAvailable(data, serviceId);
         return slot ? [{ serviceId, slot }] : [];
       });
-  return rows.flatMap(({ serviceId, slot }) => {
+  const slots = rows.flatMap(({ serviceId, slot }) => {
     const service = data.services.find((s) => s.id === serviceId && s.active),
-      master = data.masters.find((m) => m.id === slot.masterId);
+      master = data.masters.find((m) => m.id === slot.masterId && isPublishedMaster(m));
     return service && master ? [{ ...slot, service, master }] : [];
   });
+  return {
+    slots,
+    loading: isSupabase && !!serviceIds && remote.key !== key,
+    error: isSupabase && serviceIds && remote.key === key ? remote.error : '',
+    retry: () => setAttempt(n => n + 1),
+  };
 }

@@ -34,7 +34,7 @@ export function migrationFiles() {
       sql: readFileSync(path.resolve("supabase/migrations", name), "utf8"),
     }));
 }
-export async function createTestDatabase(options: { legacy?: boolean } = {}) {
+export async function createTestDatabase(options: { legacy?: boolean; unpublished?: boolean } = {}) {
   const db = new PGlite({ extensions: { btree_gist } });
   await db.exec(bootstrap);
   for (const file of migrationFiles().filter(
@@ -45,5 +45,9 @@ export async function createTestDatabase(options: { legacy?: boolean } = {}) {
   await db.exec(
     `insert into auth.users(id) values('${TEST_ADMIN_ID}'),('${TEST_USER_ID}'); insert into private.admin_users(user_id) values('${TEST_ADMIN_ID}'); update public.masters set days=array[0,1,2,3,4,5,6];`,
   );
+  // Booking regression fixtures explicitly confirm test profiles. Production
+  // seeds/migrations leave every profile unpublished until the owner's action.
+  if (!options.legacy && !options.unpublished)
+    await db.exec("update public.masters set published=true");
   return db;
 }
