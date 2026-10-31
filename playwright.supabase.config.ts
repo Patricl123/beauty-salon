@@ -22,7 +22,7 @@ export default defineConfig({
   webServer: [
     {
       command: "node test-support/mock-supabase.mjs",
-      url: "http://127.0.0.1:54329/health",
+      url: "http://127.0.0.1:15329/health",
       reuseExistingServer: false,
       timeout: 60000,
     },
@@ -33,7 +33,7 @@ export default defineConfig({
       timeout: 30000,
       env: {
         VITE_DATA_SOURCE: "supabase",
-        VITE_SUPABASE_URL: "http://127.0.0.1:54329",
+        VITE_SUPABASE_URL: "http://127.0.0.1:15329",
         VITE_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_TEST_ONLY",
         VITE_TURNSTILE_SITE_KEY: "TEST_ONLY_SITE_KEY",
       },

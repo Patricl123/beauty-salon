@@ -183,6 +183,17 @@
 .master-publication .checkbox-label { align-items: flex-start; line-height: 1.6; margin: 16px 0; }
 .master-publication input[type="checkbox"] { flex: 0 0 20px; width: 20px; height: 20px; margin-top: 2px; }
 .master-publication p { line-height: 1.6; }
+.services-block-editor > h2 { margin-bottom: 16px; }
+.services-block-editor { padding: 24px; }
+.services-block-editor > .content-image-grid { padding-inline: 0; }
+.services-block-editor > .subtle { margin-bottom: 24px; }
+.services-heading-preview { padding: 24px; margin: 24px 0; border: 1px solid #d8ccbd; border-radius: 6px; overflow-wrap: anywhere; }
+.services-heading-preview h2 { font-family: Georgia, serif; font-size: clamp(28px, 4vw, 42px); margin: 16px 0; }
+.image-editor-overlay { position: absolute; inset: auto 0 0; padding: 40px 20px 24px; color: white; background: linear-gradient(transparent, #0009); pointer-events: none; overflow-wrap: anywhere; }
+.image-editor-overlay span { font-size: 10px; letter-spacing: 1px; }
+.image-editor-overlay p { font-family: Georgia, serif; font-size: 27px; line-height: 1.25; margin-top: 10px; }
+.services-block-editor > .button { margin-top: 24px; }
+.services-section .section-heading, .service-photo > div, .service-footnote { overflow-wrap: anywhere; }
 .admin-master-card .master-publication-status { display: block; padding: 8px 10px; border-radius: 4px; background: #eee8de; line-height: 1.5; }
 .location-map { min-width: 0; display: flex; flex-direction: column; gap: 16px; border: 1px solid #d8ccbd; border-radius: 6px; padding: 24px; background: #f8f6f2; }
 .location-map h3 { font-family: Georgia, serif; font-size: 28px; }

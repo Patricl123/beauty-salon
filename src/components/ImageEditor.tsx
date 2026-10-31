@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { imageSource, type ImageDraft } from "../lib/siteContent";
 import { SafeImage } from "./SiteImage";
 
@@ -8,12 +8,14 @@ export function ImageEditor({
   ratio = 3 / 4,
   disabled = false,
   label = "Фотография",
+  overlay,
 }: {
   value: ImageDraft;
   onChange: (value: ImageDraft) => void;
   ratio?: number;
   disabled?: boolean;
   label?: string;
+  overlay?: ReactNode;
 }) {
   const id = useId();
   const [url, setUrl] = useState("");
@@ -84,6 +86,7 @@ export function ImageEditor({
               : { objectFit: ratio === 1 ? "contain" : "cover" }
           }
         />
+        {overlay && <div className="image-editor-overlay">{overlay}</div>}
       </div>
       <label htmlFor={id} className="image-file-label">
         {hasImage ? "Выбрать другое изображение" : "Выбрать изображение"}

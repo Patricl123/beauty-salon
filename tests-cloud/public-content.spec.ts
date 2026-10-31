@@ -8,13 +8,13 @@ import type { AppData } from "../src/types";
 
 async function adminApi(request: APIRequestContext) {
   const session = await (
-    await request.post("http://127.0.0.1:54329/auth/v1/token", {
+    await request.post("http://127.0.0.1:15329/auth/v1/token", {
       data: { email: "admin@example.test", password: "TestingOnly123!" },
     })
   ).json();
   return async <T>(name: string, data = {}): Promise<T> => {
     const response = await request.post(
-      `http://127.0.0.1:54329/rest/v1/rpc/${name}`,
+      `http://127.0.0.1:15329/rest/v1/rpc/${name}`,
       { headers: { Authorization: `Bearer ${session.access_token}` }, data },
     );
     expect(response.ok(), await response.text()).toBe(true);
@@ -94,7 +94,7 @@ test("empty sections have no navigation; owner confirms a profile and a guest ca
     await expect(dialog.getByRole('checkbox', {name: 'Показывать мастера на сайте и разрешить онлайн-запись', exact: true})).toBeVisible();
     await expect(dialog.getByRole('checkbox', {name: 'Показывать мастера на сайте и разрешить онлайн-запись', exact: true})).not.toBeChecked();
     await expect(dialog.getByRole('combobox', {name:'Специализация', exact: true})).toBeVisible();
-    await dialog.getByRole('combobox', {name:'Специализация', exact: true}).selectOption('Мастер маникюра');
+    await dialog.getByRole('combobox', {name:'Специализация', exact: true}).selectOption('Мастер маникюра и педикюра');
     await expect(dialog.getByRole('group', {name:'Услуги мастера',exact:true}).getByRole('checkbox').first()).not.toBeChecked();
     await dialog.getByRole('button', {name:'Закрыть',exact:true}).click();
     const card = page

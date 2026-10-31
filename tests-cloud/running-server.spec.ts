@@ -15,7 +15,7 @@ test('actual server 5173 serves publication and specialty controls in both forms
       if (url.origin !== backend) return route.abort();
       // Never continue requests to the actual backend, including unknown paths.
       if (!/^\/(auth|rest|functions)\/v1\//.test(url.pathname)) return route.abort();
-      const response = await route.fetch({url:'http://127.0.0.1:54329'+url.pathname+url.search,
+      const response = await route.fetch({url:'http://127.0.0.1:15329'+url.pathname+url.search,
         headers:{...route.request().headers(), apikey:'sb_publishable_TEST_ONLY', origin:'http://127.0.0.1:5175'}});
       await route.fulfill({response, headers:{...response.headers(),'access-control-allow-origin':'http://127.0.0.1:5173'}});
     });

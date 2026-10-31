@@ -56,7 +56,7 @@ const media = createMediaHandler({
   sign: async (path) => {
     const token = crypto.randomUUID();
     previewTokens.set(token, path);
-    return `http://127.0.0.1:54329/__test/media?preview=${token}`;
+    return `http://127.0.0.1:15329/__test/media?preview=${token}`;
   },
   download: async (path) =>
     mediaFiles.has(path)
@@ -113,7 +113,7 @@ const gateway = createHandler({
 const args = {
   get_site_content: [],
   get_site_content_admin: [],
-  save_site_content: ["p_items", "p_expected_revision"],
+  save_site_content: ["p_items", "p_expected_revision", "p_services_block"],
   media_begin_upload: ["p_actor"],
   media_finish_upload: ["p_actor", "p_id", "p_width", "p_height", "p_bytes"],
   media_asset_paths: ["p_ids", "p_actor"],
@@ -185,7 +185,7 @@ const server = http.createServer(async (req, res) => {
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);
       const response = await media(
-        new Request("http://127.0.0.1:54329" + req.url, {
+        new Request("http://127.0.0.1:15329" + req.url, {
           method: req.method,
           headers: req.headers,
           ...(req.method === "POST" ? { body: Buffer.concat(chunks) } : {}),
@@ -219,7 +219,7 @@ const server = http.createServer(async (req, res) => {
           (calls.get("create_appointment") || 0) + 1,
         );
       const response = await gateway(
-        new Request("http://127.0.0.1:54329" + route, {
+        new Request("http://127.0.0.1:15329" + route, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -332,8 +332,8 @@ const server = http.createServer(async (req, res) => {
     });
   }
 });
-server.listen(54329, "127.0.0.1", () =>
-  console.log("Disposable SQL test API: http://127.0.0.1:54329"),
+server.listen(15329, "127.0.0.1", () =>
+  console.log("Disposable SQL test API: http://127.0.0.1:15329"),
 );
 async function close() {
   server.close();

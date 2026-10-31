@@ -245,7 +245,7 @@ test("master photo is saved from the existing profile form and direct media requ
     "alt",
     "Обновлённый портрет мастера",
   );
-  const endpoint = "http://127.0.0.1:54329/functions/v1/site-media";
+  const endpoint = "http://127.0.0.1:15329/functions/v1/site-media";
   const bytes = readFileSync("public/images/nails.jpg");
   expect(
     (
@@ -256,7 +256,7 @@ test("master photo is saved from the existing profile form and direct media requ
     ).status(),
   ).toBe(401);
   const viewer = await (
-    await request.post("http://127.0.0.1:54329/auth/v1/token", {
+    await request.post("http://127.0.0.1:15329/auth/v1/token", {
       data: { email: "viewer@example.test", password: "TestingOnly123!" },
     })
   ).json();

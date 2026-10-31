@@ -7,7 +7,7 @@ import {
 import type { AppData, Appointment } from "../src/types";
 import { addDays, today } from "../src/lib/schedule";
 
-const api = "http://127.0.0.1:54329";
+const api = "http://127.0.0.1:15329";
 async function adminApi(request: APIRequestContext) {
   const session = await (
     await request.post(`${api}/auth/v1/token?grant_type=password`, {
@@ -66,7 +66,7 @@ for (const kind of ["master", "service"] as const) {
     if (kind === "master") {
       await dialog
         .getByLabel("Специализация", { exact: true })
-        .selectOption("Стилист по волосам");
+        .selectOption("Парикмахер-стилист");
       const publication = dialog.getByRole('checkbox', {name:'Показывать мастера на сайте и разрешить онлайн-запись',exact:true});
       await expect(publication).not.toBeChecked();
       await publication.check();
@@ -80,7 +80,7 @@ for (const kind of ["master", "service"] as const) {
     await expect(dialog).toHaveCount(0);
     if (kind === 'master') {
       const saved = await call<AppData>('get_admin_snapshot');
-      expect(saved.masters.find(m => m.name === name)).toMatchObject({published:true, specialty:'Стилист по волосам',serviceIds:[]});
+      expect(saved.masters.find(m => m.name === name)).toMatchObject({published:true, specialty:'Парикмахер-стилист',serviceIds:[]});
     }
     const row = entry(page, kind, name);
     await row.getByRole("button", { name: "Удалить", exact: true }).click();

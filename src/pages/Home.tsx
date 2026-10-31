@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -16,23 +16,25 @@ import { useNearestSlots } from "../lib/useAvailability";
 import { isSupabase } from "../lib/supabase";
 import type { BookingPreset, Category } from "../types";
 import { Arrow, Brand, Empty, Modal } from "../components/UI";
-import { useSiteContent } from "../lib/siteContent";
+import { initialContent, initialServicesBlock, useSiteContent } from "../lib/siteContent";
 import { ContentImage, MasterImage } from "../components/SiteImage";
 import { isPublishedMaster, isPublishedWork } from "../lib/publicContent";
 import { LocationMap } from "../components/LocationMap";
-const categoryPhotos: Record<Category, string> = {
-  hair: "/images/hair.jpg",
-  nails: "/images/nails.jpg",
-  brows: "/images/master-diana.jpg",
-  makeup: "/images/master-elina.jpg",
-  care: "/images/care.jpg",
-};
 export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
   const { data, loading, error, refresh } = useStore();
-  const [category, setCategory] = useState<Category>("hair");
+  const [selectedCategory, setCategory] = useState<Category>("hair");
   const [portfolio, setPortfolio] = useState<string | null>(null);
   const [salonIndex, setSalonIndex] = useState(0);
   const { content } = useSiteContent();
+  const serviceBlock = content.servicesBlock || initialServicesBlock;
+  const availableCategories = (Object.keys(categories) as Category[]).filter(id =>
+    data.services.some(s => s.category === id && s.active && !s.archived));
+  const category = availableCategories.includes(selectedCategory) ? selectedCategory : availableCategories[0];
+  useEffect(() => {
+    if (category && category !== selectedCategory) setCategory(category);
+  }, [category, selectedCategory]);
+  const categoryImage = content.items.find(i => i.id === `category:${category}`)
+    || initialContent.items.find(i => i.id === `category:${category}`);
   const hero = content.items.find((i) => i.kind === "hero");
   const salonPhotos = content.items
     .filter((i) => i.kind === "salon" && i.visible)
@@ -199,23 +201,21 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
           <div className="container">
             <div className="section-heading">
               <div>
-                <div className="eyebrow">МАЛЕНЬКИЕ РИТУАЛЫ КРАСОТЫ</div>
+                <div className="eyebrow">{serviceBlock.eyebrow}</div>
                 <h2>
-                  То, что вам <em>нужно</em>
+                  {serviceBlock.headingBefore}{' '}<em>{serviceBlock.headingEmphasis}</em>{' '}{serviceBlock.headingAfter}
                 </h2>
               </div>
-              <p className="heading-aside">
-                От любимой стрижки до часа тишины.
-                <br />
-                Выбирайте заботу по настроению.
+              <p className="heading-aside" style={{whiteSpace:'pre-line'}}>
+                {serviceBlock.description}
               </p>
             </div>
-            <div
+            {category && !loading && !error ? <><div
               className="category-tabs"
               role="tablist"
               aria-label="Категории услуг"
             >
-              {Object.entries(categories).map(([id, label]) => (
+              {availableCategories.map(id => (
                 <button
                   key={id}
                   role="tab"
@@ -224,7 +224,7 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
                   id={`tab-${id}`}
                   tabIndex={category === id ? 0 : -1}
                   onKeyDown={(e) => {
-                    const ids = Object.keys(categories) as Category[];
+                    const ids = availableCategories;
                     const index = ids.indexOf(category);
                     const next =
                       e.key === "ArrowRight"
@@ -245,7 +245,7 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
                   onClick={() => setCategory(id as Category)}
                   className={category === id ? "active" : ""}
                 >
-                  {label}
+                  {categories[id]}
                   <Arrow size={15} />
                 </button>
               ))}
@@ -257,20 +257,10 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
               aria-labelledby={`tab-${category}`}
             >
               <div className="service-photo">
-                <img
-                  src={categoryPhotos[category]}
-                  alt={`Вдохновение для категории «${categories[category]}»`}
-                  loading="lazy"
-                />
+                <ContentImage item={categoryImage} loading="lazy" />
                 <div>
-                  <span>01 — ВАША НОВАЯ ИСТОРИЯ</span>
-                  <p>
-                    {category === "hair"
-                      ? "Лёгкость в каждом движении"
-                      : category === "nails"
-                        ? "Красота в деталях"
-                        : "Позвольте себе сиять"}
-                  </p>
+                  <span>{categoryImage?.caption}</span>
+                  <p>{categoryImage?.title}</p>
                 </div>
               </div>
               <div className="service-list">
@@ -303,11 +293,13 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
                 ) && <Empty title="Скоро здесь появятся услуги" />}
                 <div className="service-footnote">
                   {isSupabase
-                    ? "Стоимость фиксируется при записи. Без онлайн-оплаты."
+                    ? serviceBlock.footnote
                     : "Цены и услуги демонстрационные. Без онлайн-оплаты."}
                 </div>
               </div>
-            </div>
+            </div></> : loading ? <p role="status">Загружаем услуги…</p>
+              : error ? <p role="alert">Не удалось загрузить услуги. Повторите загрузку каталога.</p>
+              : <Empty title="Пока нет доступных услуг"><p>Здесь появятся услуги, когда салон добавит их в каталог.</p></Empty>}
           </div>
         </section>
         {publicMasters.length > 0 && <section className="section container" id="masters">

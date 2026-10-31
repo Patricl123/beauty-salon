@@ -13,7 +13,7 @@ import {
 import { Modal } from "./UI";
 import { ImageEditor } from "./ImageEditor";
 import { isSupabase } from "../lib/supabase";
-import { masters as initialMasters } from "../data/seed";
+import { masterSpecialties } from "../lib/masterSpecialties";
 import {
   mediaError,
   mediaRequest,
@@ -180,13 +180,8 @@ export function MasterForm({
     },
   );
   const [daysOff, setDaysOff] = useState(form.daysOff.join(", "));
-  // Keep the established project options and every saved owner-defined value.
-  // Specialties are labels, never a replacement for assigned serviceIds.
-  const specialties = [...new Set([
-    ...initialMasters.map(m => m.specialty),
-    ...data.masters.map(m => m.specialty),
-    form.specialty,
-  ].filter(Boolean))];
+  const legacySpecialty = initial?.specialty &&
+    !masterSpecialties.some(value => value === initial.specialty) ? initial.specialty : '';
   const [photo, setPhoto] = useState<ImageDraft>({
     assetId: initial?.photoAssetId || null,
     legacySrc: initial?.photo || "",
@@ -358,9 +353,11 @@ export function MasterForm({
                 onChange={(e) => set("specialty", e.target.value)}
               >
                 <option value="" disabled>Выберите специализацию</option>
-                {specialties.map(value => <option key={value} value={value}>{value}</option>)}
+                {legacySpecialty && <option value={legacySpecialty}>Текущее значение — выберите специализацию из списка: {legacySpecialty}</option>}
+                {masterSpecialties.map(value => <option key={value} value={value}>{value}</option>)}
               </select>
             </label>
+            {legacySpecialty && form.specialty === legacySpecialty && <p className="subtle">Сохранённое значение: «{legacySpecialty}». Оно останется прежним, пока вы сами не выберете специализацию. Назначенные услуги меняются отдельно.</p>}
           <ImageEditor
             value={photo}
             onChange={setPhoto}

@@ -19,6 +19,7 @@ import {
   type SiteImage,
 } from "../lib/siteContent";
 import { ImageEditor } from "./ImageEditor";
+import { ServicesBlockEditor } from "./ServicesBlockEditor";
 
 export function SiteContentAdmin({
   onMessage,
@@ -77,7 +78,7 @@ export function SiteContentAdmin({
   }, [dirty]);
   const edit = (items: SiteImage[]) => {
     const ordered = new Map(
-      ["hero", "logo", "salon", "portfolio"].map((kind) => [
+      ["hero", "logo", "salon", "portfolio", "service_category"].map((kind) => [
         kind,
         items
           .filter((i) => i.kind === kind)
@@ -121,7 +122,9 @@ export function SiteContentAdmin({
       setBusy("Сохранение изменений…");
       const { data, error: problem } = await requireSupabase().rpc(
         "save_site_content",
-        { p_items: items.map(cleanImage), p_expected_revision: draft.revision },
+        { p_items: items.map(cleanImage), p_expected_revision: draft.revision,
+          ...(draft.servicesBlock ? {p_services_block: draft.servicesBlock} : {}),
+        },
       );
       if (problem) throw problem;
       setDraft({
@@ -225,6 +228,8 @@ export function SiteContentAdmin({
         </button>
       </div>
       <fieldset disabled={!isSupabase || !!busy} className="content-fields">
+        {draft && <ServicesBlockEditor content={draft} canSave={isSupabase && !busy && dirty}
+          onSave={() => void save()} onChange={next=>{setDraft(next);setDirty(true);setError('');}} />}
         {(
           [
             ["hero", "Главное фото"],

@@ -19,7 +19,7 @@ test("a public form cannot submit without completing the CAPTCHA", async ({
     (route) => route.abort(),
   );
   const before = await (
-    await request.get("http://127.0.0.1:54329/__test/stats")
+    await request.get("http://127.0.0.1:15329/__test/stats")
   ).json();
   await page.goto("/");
   await page
@@ -40,7 +40,7 @@ test("a public form cannot submit without completing the CAPTCHA", async ({
     }),
   ).toBeVisible();
   const after = await (
-    await request.get("http://127.0.0.1:54329/__test/stats")
+    await request.get("http://127.0.0.1:15329/__test/stats")
   ).json();
   expect(after.appointments).toBe(before.appointments);
   expect(after.calls.create_appointment || 0).toBe(
@@ -104,7 +104,7 @@ test("lost create response can be retried without duplication, then moved and ca
   request,
 }) => {
   const before = await (
-    await request.get("http://127.0.0.1:54329/__test/stats")
+    await request.get("http://127.0.0.1:15329/__test/stats")
   ).json();
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -143,7 +143,7 @@ test("lost create response can be retried without duplication, then moved and ca
     dialog.getByRole("heading", { name: "Ваше время — для вас." }),
   ).toBeVisible();
   const after = await (
-    await request.get("http://127.0.0.1:54329/__test/stats")
+    await request.get("http://127.0.0.1:15329/__test/stats")
   ).json();
   expect(after.appointments - before.appointments).toBe(1);
   expect(
@@ -192,7 +192,7 @@ test("private APIs reject a visitor and another browser cannot list someone else
   request,
 }) => {
   const response = await request.post(
-    "http://127.0.0.1:54329/rest/v1/rpc/get_admin_snapshot",
+    "http://127.0.0.1:15329/rest/v1/rpc/get_admin_snapshot",
     { data: {}, headers: { apikey: "sb_publishable_TEST_ONLY" } },
   );
   expect(response.status()).toBe(403);

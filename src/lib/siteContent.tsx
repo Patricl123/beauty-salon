@@ -24,7 +24,8 @@ export interface ImageDraft {
 }
 export interface SiteImage extends ImageDraft {
   id: string;
-  kind: "hero" | "salon" | "logo" | "portfolio";
+  kind: "hero" | "salon" | "logo" | "portfolio" | "service_category";
+  title?: string;
   caption: string;
   category: string;
   position: number;
@@ -33,7 +34,22 @@ export interface SiteImage extends ImageDraft {
 export interface SiteContent {
   revision: number;
   items: SiteImage[];
+  servicesBlock?: ServicesBlock;
 }
+export interface ServicesBlock {
+  eyebrow: string;
+  headingBefore: string;
+  headingEmphasis: string;
+  headingAfter: string;
+  description: string;
+  footnote: string;
+}
+export const initialServicesBlock: ServicesBlock = {
+  eyebrow: 'МАЛЕНЬКИЕ РИТУАЛЫ КРАСОТЫ',
+  headingBefore: 'То, что вам', headingEmphasis: 'нужно', headingAfter: '',
+  description: 'От любимой стрижки до часа тишины.\nВыбирайте заботу по настроению.',
+  footnote: 'Стоимость фиксируется при записи. Без онлайн-оплаты.',
+};
 const item = (
   id: string,
   kind: SiteImage["kind"],
@@ -55,7 +71,17 @@ const item = (
 });
 export const initialContent: SiteContent = {
   revision: 0,
+  servicesBlock: initialServicesBlock,
   items: [
+    ...([
+      ['hair', 'Волосы', '/images/hair.jpg', 'Лёгкость в каждом движении'],
+      ['nails', 'Ногти', '/images/nails.jpg', 'Красота в деталях'],
+      ['brows', 'Брови и ресницы', '/images/master-diana.jpg', 'Позвольте себе сиять'],
+      ['makeup', 'Макияж', '/images/master-elina.jpg', 'Позвольте себе сиять'],
+      ['care', 'Уход', '/images/care.jpg', 'Позвольте себе сиять'],
+    ] as const).map(([category, label, src, title], index) => ({
+      ...item(`category:${category}`, 'service_category', src, `Вдохновение для категории «${label}»`, index, '01 — ВАША НОВАЯ ИСТОРИЯ', category), title,
+    })),
     item(
       "hero",
       "hero",
@@ -101,6 +127,7 @@ export function imageSource(value?: Pick<ImageDraft, "assetId" | "legacySrc">) {
     : value?.legacySrc || "";
 }
 const messages: Record<string, string> = {
+  INVALID_CONTENT: 'Проверьте длину текстов и заполнение блока услуг. Изменения не сохранены.',
   LOGIN_REQUIRED: "Сеанс истёк. Войдите снова.",
   ADMIN_REQUIRED: "Загрузка доступна только назначенным администраторам.",
   UNSUPPORTED_IMAGE:
@@ -192,6 +219,7 @@ export const cleanImage = ({
   category,
   position,
   visible,
+  title,
 }: SiteImage): SiteImage => ({
   id,
   kind,
@@ -202,6 +230,7 @@ export const cleanImage = ({
   category,
   position,
   visible,
+  title,
 });
 const Context = createContext({
   content: initialContent,

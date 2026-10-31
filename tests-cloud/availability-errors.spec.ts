@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { addDays, dateLabel, today } from '../src/lib/schedule';
 
 test('gateway failure is an error, not empty availability; retry recovers', async ({page}) => {
   let fail = true;
@@ -16,6 +17,11 @@ test('gateway failure is an error, not empty availability; retry recovers', asyn
   const dialog = page.getByRole('dialog');
   await dialog.locator('.service-choice').first().click();
   await dialog.getByRole('button', {name:/Выбрать дату и время/}).click();
+  // The test must work after the salon closes, including on the last day of a month.
+  const nextDay = addDays(today(), 1);
+  if (nextDay.slice(0,7) !== today().slice(0,7))
+    await dialog.getByRole('button', {name:'Следующий месяц',exact:true}).click();
+  await dialog.getByRole('button', {name:dateLabel(nextDay,{day:'numeric',month:'long',year:'numeric'}),exact:true}).click();
   await expect(dialog.locator('.time-grid')).toBeVisible();
   fail = true;
   await dialog.getByRole('button', {name:'Назад',exact:true}).click();
