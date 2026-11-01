@@ -16,7 +16,7 @@ export function calendarText(a: Appointment, data: AppData) {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//AURA//Beauty Demo//RU",
+    "PRODID:-//VIAVERDE//Beauty//RU",
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
     `UID:${a.id}@aura-demo.local`,

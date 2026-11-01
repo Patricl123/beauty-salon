@@ -84,7 +84,7 @@ function Site() {
                 <main className="container empty">
                   <h1>Страница не найдена</h1>
                   <Link className="button button-dark" to="/">
-                    Вернуться в AURA
+                    Вернуться в VIAVERDE
                   </Link>
                 </main>
               }

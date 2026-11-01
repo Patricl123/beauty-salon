@@ -139,7 +139,7 @@ export function Toast({
 export function Loading() {
   return (
     <div className="loading" role="status">
-      <LoaderCircle className="spin" /> Загружаем пространство AURA…
+      <LoaderCircle className="spin" /> Загружаем пространство VIAVERDE…
     </div>
   );
 }

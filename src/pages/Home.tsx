@@ -453,7 +453,7 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
               },
               {
                 q: "Нужно ли вносить предоплату?",
-                a: "В этом прототипе оплата не предусмотрена. Итоговая демонстрационная стоимость видна на каждом шаге записи.",
+                a: isSupabase ? "Онлайн-оплаты нет. Итоговая стоимость видна на каждом шаге записи." : "В этом прототипе оплата не предусмотрена. Итоговая демонстрационная стоимость видна на каждом шаге записи.",
               },
               {
                 q: "Почему некоторые часы недоступны?",
@@ -524,7 +524,7 @@ export function Home({ onBook }: { onBook: (preset?: BookingPreset) => void }) {
         <div className="container footer-bottom">
           <span>
             © {new Date().getFullYear()} {data.settings.name}{" "}
-            {data.settings.tagline} · Концепция
+            {data.settings.tagline}{isSupabase ? "" : " · Концепция"}
           </span>
           <span>
             Фото: Unsplash ·{" "}
